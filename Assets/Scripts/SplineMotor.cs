@@ -96,6 +96,7 @@ public class SplineMotor : MonoBehaviour
     {
         currentSegment = segment;
         localOffset = initialLocalOffset;
+        currentSegment.RegisterMotor(this);
 
         if (currentSegment != null && currentSegment.spline != null)
             segmentLength = currentSegment.GetLength();
@@ -133,7 +134,9 @@ public class SplineMotor : MonoBehaviour
 
             if (next != null)
             {
+                currentSegment.UnregisterMotor(this);
                 currentSegment = next.parentSegment;
+                currentSegment.RegisterMotor(this);
                 segmentLength = currentSegment.GetLength();
 
                 // сохраняем направление движения
@@ -155,7 +158,9 @@ public class SplineMotor : MonoBehaviour
 
             if (next != null)
             {
+                currentSegment.UnregisterMotor(this);
                 currentSegment = next.parentSegment;
+                currentSegment.RegisterMotor(this);
                 segmentLength = currentSegment.GetLength();
 
                 float localDir = (next.s < 0.5f) ? +1 : -1;

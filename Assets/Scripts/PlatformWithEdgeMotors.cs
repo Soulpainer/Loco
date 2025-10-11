@@ -29,6 +29,8 @@ public class PlatformWithMotors : MonoBehaviour
             return;
         }
 
+        frontMotor.SetPlatform(this);
+        backMotor.SetPlatform(this);
         // Инициализация моторных точек с локальными оффсетами
         frontMotor.SetSegment(spline, frontMotor.transform.localPosition);
         backMotor.SetSegment(spline, backMotor.transform.localPosition);
