@@ -19,6 +19,7 @@ public class PlatformWithMotors : MonoBehaviour
     private float speed = 0f;
     private float input = 0f;
 
+    public float Speed => speed;
     public void AddSpeed(float amount)
     {
         this.speed += amount;
@@ -42,13 +43,10 @@ public class PlatformWithMotors : MonoBehaviour
         }
 
         AllPlatforms.Add(this);
-        frontMotor.SetPlatform(this);
-        backMotor.SetPlatform(this);
-        // Инициализация моторных точек с локальными оффсетами
+
         frontMotor.SetSegment(spline, frontMotor.transform.localPosition);
         backMotor.SetSegment(spline, backMotor.transform.localPosition);
 
-        // Snap один раз на старте
         frontMotor.SnapToSegmentAtStart(transform);
         backMotor.SnapToSegmentAtStart(transform);
     }
@@ -61,6 +59,36 @@ public class PlatformWithMotors : MonoBehaviour
 
     void Update()
     {
+        foreach (var platform in AllPlatforms)
+        {
+            if (platform == this)
+                continue;
+
+            SplineMotor collidedMotor = CheckCollisionWithOtherPlatform(platform);
+            if (collidedMotor)
+            {
+                if (collidedMotor == platform.backMotor)
+                {
+                    float v1 = speed;
+                    float v2 = platform.speed;
+                    float newV1 = GetCollisionSpeed(v1, v2);
+                    float newV2 = GetCollisionSpeed(v2, v1);
+                    AddSpeed(-speed + newV1);
+                    platform.AddSpeed(-platform.speed + newV2);
+                }
+                else
+                {
+                    float v1 = speed;
+                    float v2 = platform.speed;
+                    float newV1 = GetCollisionSpeed(v1, v2);
+                    float newV2 = GetCollisionSpeed(v2, v1);
+                    AddSpeed(-speed + newV1);
+                    platform.AddSpeed(-platform.speed + newV2);
+                }
+            }
+        }
+
+
         float dt = Time.deltaTime;
 
         Vector3 forwardDir = (frontMotor.EvaluatePosition() - backMotor.EvaluatePosition()).normalized;
@@ -80,48 +108,18 @@ public class PlatformWithMotors : MonoBehaviour
         transform.position = (posFront + posBack) * 0.5f;
         transform.rotation = Quaternion.LookRotation(forwardDir, up);
 
-        foreach (var platform in AllPlatforms)
-        {
-            if (platform == this)
-                continue;
 
-            SplineMotor collidedMotor = CheckCollisionWithOtherPlatform(platform);
-            if (collidedMotor)
-            {
-                Debug.Log("BLO");
-                if (collidedMotor == platform.backMotor)
-                {
-                    platform.AddSpeed(speed / 2);
-                }
-                else
-                {
-                    platform.AddSpeed(-speed / 2);
-                }
-                //speed *= 0.5f;
-            }
-        }
+    }
+
+    private float GetCollisionSpeed(float v1, float v2, float m1 = 1, float m2 = 1, float e = 0.5f)
+    {
+        return ((m1 - e * m2) * v1 + (1 + e) * m2 * v2) / (m1 + m2);
     }
 
     private SplineMotor CheckCollisionWithOtherPlatform(PlatformWithMotors other)
     {
-
-        // if (frontMotor.CurrentSegment == backMotor.CurrentSegment)
-        // {
-        //     if (other.frontMotor.CurrentSegment == frontMotor.CurrentSegment)
-        //     {
-        //         return (other.frontMotor.S >= frontMotor.S && other.frontMotor.S <= backMotor.S)
-        //         || (other.frontMotor.S <= frontMotor.S && other.frontMotor.S >= backMotor.S);
-        //     }
-        //     if (other.backMotor.CurrentSegment == frontMotor.CurrentSegment)
-        //     {
-        //         return (other.backMotor.S >= frontMotor.S && other.backMotor.S <= backMotor.S)
-        //         || (other.backMotor.S <= frontMotor.S && other.backMotor.S >= backMotor.S);
-        //     }
-        // }
         foreach (var otherMotor in new[] { other.frontMotor, other.backMotor })
         {
-            //foreach (var myMotor in new[] { frontMotor, backMotor })
-            //{
 
             if (otherMotor.CurrentSegment != frontMotor.CurrentSegment || otherMotor.CurrentSegment != backMotor.CurrentSegment)
                 continue;
@@ -162,7 +160,6 @@ public class PlatformWithMotors : MonoBehaviour
                         return otherMotor;
                 }
             }
-            //}
         }
 
         return null;

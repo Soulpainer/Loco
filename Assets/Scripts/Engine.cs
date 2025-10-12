@@ -9,7 +9,7 @@ public class Engine : MonoBehaviour
     private PlatformWithMotors platform;
 
     [HideInInspector]
-    public float inputThrust; // значение от -1 до 1
+    public float inputThrust;
 
     void Awake()
     {
@@ -18,12 +18,11 @@ public class Engine : MonoBehaviour
 
     void Update()
     {
-        // --- ввод ---
+
         inputThrust = 0f;
         if (Input.GetKey(KeyCode.W)) inputThrust += 1f;
         if (Input.GetKey(KeyCode.S)) inputThrust -= 1f;
 
-        // --- добавляем ускорение к платформе ---
         if (platform)
             platform.SetThrust(inputThrust * drivePower);
     }
