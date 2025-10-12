@@ -78,7 +78,7 @@ using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.Splines;
 using UnityEditor;
-using System.Collections.Generic;
+using System;
 
 public class SplineMotor : MonoBehaviour
 {
@@ -90,7 +90,10 @@ public class SplineMotor : MonoBehaviour
     private float _inverseFactor = 1;
     [HideInInspector] public Vector3 localOffset;
 
+    public float S => s;
+    public TrackSegment CurrentSegment => currentSegment;
     public TrackController controller;
+    private PlatformWithMotors _platform;
 
     public void SetSegment(TrackSegment segment, Vector3 initialLocalOffset)
     {
@@ -115,7 +118,78 @@ public class SplineMotor : MonoBehaviour
         transform.position = math.transform(currentSegment.spline.transform.localToWorldMatrix, nearestLocal);
     }
 
+    public float GetDirectionAlongSegment()
+    {
+        // возвращает направление вдоль сегмента: +1 или -1
+        return _inverseFactor; // у тебя уже хранится направление мотора на сегменте
+    }
+
     public void MoveAlongSegment(float ds)
+    {
+        if (currentSegment == null || currentSegment.spline == null) return;
+        if (segmentLength < 0.0001f) return;
+
+        float worldDir = Mathf.Sign(ds);
+        //s += (ds / segmentLength) * _inverseFactor;
+        float targetS = s + (ds / segmentLength) * _inverseFactor;
+
+        s = targetS;
+
+        // --- Переход вперёд ---
+        if (s > 1f)
+        {
+            var joint = currentSegment.endJoint;
+            var next = controller.GetConnectedJoint(joint);
+
+            if (next != null)
+            {
+                currentSegment.UnregisterMotor(this);
+                currentSegment = next.parentSegment;
+                currentSegment.RegisterMotor(this);
+                segmentLength = currentSegment.GetLength();
+
+                // сохраняем направление движения
+                float localDir = (next.s < 0.5f) ? +1 : -1; // если 0 — идём 0→1, если 1 — идём 1→0
+                _inverseFactor = localDir * worldDir;
+
+                s = next.s;
+            }
+            else
+            {
+                s = 1f;
+            }
+        }
+        // --- Переход назад ---
+        else if (s < 0f)
+        {
+            var joint = currentSegment.startJoint;
+            var next = controller.GetConnectedJoint(joint);
+
+            if (next != null)
+            {
+                currentSegment.UnregisterMotor(this);
+                currentSegment = next.parentSegment;
+                currentSegment.RegisterMotor(this);
+                segmentLength = currentSegment.GetLength();
+
+                float localDir = (next.s < 0.5f) ? +1 : -1;
+                _inverseFactor = localDir * worldDir;
+
+                s = next.s;
+            }
+            else
+            {
+                s = 0f;
+            }
+        }
+
+        // --- обновление позиции ---
+        SplineUtility.Evaluate(currentSegment.spline.Spline, s, out float3 pos, out _, out _);
+        transform.position = math.transform(currentSegment.spline.transform.localToWorldMatrix, pos);
+    }
+
+
+    public void MoveAlongSegment1(float ds)
     {
         if (currentSegment == null || currentSegment.spline == null) return;
         if (segmentLength < 0.0001f) return;
@@ -179,126 +253,126 @@ public class SplineMotor : MonoBehaviour
         transform.position = math.transform(currentSegment.spline.transform.localToWorldMatrix, pos);
     }
 
-    public void MoveAlongSegment2(float ds)
-    {
-        if (currentSegment == null || currentSegment.spline == null) return;
-        if (segmentLength < 0.0001f) return;
+    // public void MoveAlongSegment2(float ds)
+    // {
+    //     if (currentSegment == null || currentSegment.spline == null) return;
+    //     if (segmentLength < 0.0001f) return;
 
-        float remaining = (ds) / segmentLength;
+    //     float remaining = (ds) / segmentLength;
 
-        if (Mathf.Sign(ds) != Mathf.Sign(_inverseFactor))
-            _inverseFactor *= -1;
-        s += remaining * _inverseFactor;
-        if (_showLog) Debug.Log(s);
-        // --- перепрыгивание через джойнт через TrackController ---
-        int ttr = 0;
-        int maxttr = 10000;
+    //     if (Mathf.Sign(ds) != Mathf.Sign(_inverseFactor))
+    //         _inverseFactor *= -1;
+    //     s += remaining * _inverseFactor;
+    //     if (_showLog) Debug.Log(s);
+    //     // --- перепрыгивание через джойнт через TrackController ---
+    //     int ttr = 0;
+    //     int maxttr = 10000;
 
-        // //while (ttr < maxttr && (s > 1f || s < 0f))
-        // //{
-        // //ttr++;
-        // if (s > 1f)
-        // {
-        //     SplineJoint joint = currentSegment.endJoint;
-        //     if (controller != null && joint != null)
-        //     {
-        //         var next = controller.GetConnectedJoint(joint);
-        //         if (next != null)
-        //         {
-        //             _inverseFactor = next.s < 0.5f ? 1 : -1;
+    //     // //while (ttr < maxttr && (s > 1f || s < 0f))
+    //     // //{
+    //     // //ttr++;
+    //     // if (s > 1f)
+    //     // {
+    //     //     SplineJoint joint = currentSegment.endJoint;
+    //     //     if (controller != null && joint != null)
+    //     //     {
+    //     //         var next = controller.GetConnectedJoint(joint);
+    //     //         if (next != null)
+    //     //         {
+    //     //             _inverseFactor = next.s < 0.5f ? 1 : -1;
 
-        //             float excess = s - 1f;
-        //             currentSegment = next.parentSegment;
-        //             segmentLength = currentSegment.GetLength();
-        //             s = next.s;// + excess;
+    //     //             float excess = s - 1f;
+    //     //             currentSegment = next.parentSegment;
+    //     //             segmentLength = currentSegment.GetLength();
+    //     //             s = next.s;// + excess;
 
-        //         }
-        //         // else
-        //         // {
-        //         //     s = 1f;
-        //         //     //break;
-        //         // }
-        //     }
-        //     // else
-        //     // {
-        //     //     s = 1f;
-        //     //     //break;
-        //     // }
-        // }
-        // else if (s < 0f)
-        // {
-        //     SplineJoint joint = currentSegment.startJoint;
-        //     if (controller != null && joint != null)
-        //     {
-        //         var next = controller.GetConnectedJoint(joint);
-        //         if (next != null)
-        //         {
-        //             _inverseFactor = next.s < 0.5f ? -1 : 1;
+    //     //         }
+    //     //         // else
+    //     //         // {
+    //     //         //     s = 1f;
+    //     //         //     //break;
+    //     //         // }
+    //     //     }
+    //     //     // else
+    //     //     // {
+    //     //     //     s = 1f;
+    //     //     //     //break;
+    //     //     // }
+    //     // }
+    //     // else if (s < 0f)
+    //     // {
+    //     //     SplineJoint joint = currentSegment.startJoint;
+    //     //     if (controller != null && joint != null)
+    //     //     {
+    //     //         var next = controller.GetConnectedJoint(joint);
+    //     //         if (next != null)
+    //     //         {
+    //     //             _inverseFactor = next.s < 0.5f ? -1 : 1;
 
-        //             float deficit = s;
-        //             currentSegment = next.parentSegment;
-        //             segmentLength = currentSegment.GetLength();
-        //             s = next.s;// + deficit;
-        //         }
-        //         // else
-        //         // {
-        //         //     s = 0f;
-        //         //     //break;
-        //         // }
-        //     }
-        //     // else
-        //     // {
-        //     //     s = 0f;
-        //     //     //break;
-        //     // }
-        // }
-        // //}
-        if (s > 1f)
-        {
-            var joint = currentSegment.endJoint;
-            var next = controller.GetConnectedJoint(joint);
-            if (next != null)
-            {
-                float excess = s - 1f;
+    //     //             float deficit = s;
+    //     //             currentSegment = next.parentSegment;
+    //     //             segmentLength = currentSegment.GetLength();
+    //     //             s = next.s;// + deficit;
+    //     //         }
+    //     //         // else
+    //     //         // {
+    //     //         //     s = 0f;
+    //     //         //     //break;
+    //     //         // }
+    //     //     }
+    //     //     // else
+    //     //     // {
+    //     //     //     s = 0f;
+    //     //     //     //break;
+    //     //     // }
+    //     // }
+    //     // //}
+    //     if (s > 1f)
+    //     {
+    //         var joint = currentSegment.endJoint;
+    //         var next = controller.GetConnectedJoint(joint);
+    //         if (next != null)
+    //         {
+    //             float excess = s - 1f;
 
-                // запоминаем, откуда и куда
-                var jointFromS = next.s;                     // на какой стороне мы влетели
-                float jointToS = (jointFromS == 0f) ? 1f : 0f;//var jointTo = jointFrom.OppositeOn(next.parentSegment); // на другой конец
+    //             // запоминаем, откуда и куда
+    //             var jointFromS = next.s;                     // на какой стороне мы влетели
+    //             float jointToS = (jointFromS == 0f) ? 1f : 0f;//var jointTo = jointFrom.OppositeOn(next.parentSegment); // на другой конец
 
-                currentSegment = next.parentSegment;
-                segmentLength = currentSegment.GetLength();
+    //             currentSegment = next.parentSegment;
+    //             segmentLength = currentSegment.GetLength();
 
-                // направление вдоль нового сегмента
-                _inverseFactor = Mathf.Sign(jointToS - jointFromS);
+    //             // направление вдоль нового сегмента
+    //             _inverseFactor = Mathf.Sign(jointToS - jointFromS);
 
-                // переносим остаток
-                s = jointFromS + excess * _inverseFactor;
-            }
-        }
-        else if (s < 0f)
-        {
-            var joint = currentSegment.startJoint;
-            var next = controller.GetConnectedJoint(joint);
-            if (next != null)
-            {
-                float deficit = s;
+    //             // переносим остаток
+    //             s = jointFromS + excess * _inverseFactor;
+    //         }
+    //     }
+    //     else if (s < 0f)
+    //     {
+    //         var joint = currentSegment.startJoint;
+    //         var next = controller.GetConnectedJoint(joint);
+    //         if (next != null)
+    //         {
+    //             float deficit = s;
 
-                var jointFromS = next.s;
-                float jointToS = (jointFromS == 0f) ? 1f : 0f;//var jointTo = jointFrom.OppositeOn(next.parentSegment);
+    //             var jointFromS = next.s;
+    //             float jointToS = (jointFromS == 0f) ? 1f : 0f;//var jointTo = jointFrom.OppositeOn(next.parentSegment);
 
-                currentSegment = next.parentSegment;
-                segmentLength = currentSegment.GetLength();
+    //             currentSegment = next.parentSegment;
+    //             segmentLength = currentSegment.GetLength();
 
-                _inverseFactor = Mathf.Sign(jointToS - jointFromS);
+    //             _inverseFactor = Mathf.Sign(jointToS - jointFromS);
 
-                s = jointFromS + deficit * _inverseFactor;
-            }
-        }
+    //             s = jointFromS + deficit * _inverseFactor;
+    //         }
+    //     }
 
-        // --- обновляем позицию на сегменте ---
-        SplineUtility.Evaluate(currentSegment.spline.Spline, s, out float3 pos, out _, out _);
-        transform.position = math.transform(currentSegment.spline.transform.localToWorldMatrix, pos);
-    }
+    //     // --- обновляем позицию на сегменте ---
+    //     SplineUtility.Evaluate(currentSegment.spline.Spline, s, out float3 pos, out _, out _);
+    //     transform.position = math.transform(currentSegment.spline.transform.localToWorldMatrix, pos);
+    // }
 
     public Vector3 EvaluatePosition()
     {
@@ -319,5 +393,10 @@ public class SplineMotor : MonoBehaviour
     void OnDrawGizmos()
     {
         Handles.Label(transform.position, s.ToString("F2"));
+    }
+
+    internal void SetPlatform(PlatformWithMotors platformWithMotors)
+    {
+        _platform = platformWithMotors;
     }
 }
