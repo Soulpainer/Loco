@@ -9,6 +9,7 @@ public class SplineMotor : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float s;
     [SerializeField] private bool _showLog;
+
     private TrackSegment currentSegment;
     private float segmentLength;
     private float _inverseFactor = 1;
@@ -124,6 +125,8 @@ public class SplineMotor : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Handles.Label(transform.position, s.ToString("F2"));
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = transform.localPosition.z > 0 ? Color.red : Color.blue;
+        Handles.Label(transform.position + Vector3.up * transform.localPosition.z * 0.5f, s.ToString("F3"), style);
     }
 }
