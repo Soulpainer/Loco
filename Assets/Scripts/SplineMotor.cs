@@ -19,6 +19,8 @@ public class SplineMotor : MonoBehaviour
     public TrackSegment CurrentSegment => currentSegment;
     public TrackController controller;
 
+    public SplineMotor ConnectedTo;
+
     public void SetSegment(TrackSegment segment, Vector3 initialLocalOffset)
     {
         currentSegment = segment;
@@ -123,10 +125,25 @@ public class SplineMotor : MonoBehaviour
         return math.rotate(currentSegment.spline.transform.localToWorldMatrix, up);
     }
 
+    public bool TryToConnect(SplineMotor connection)
+    {
+        if (connection == null) return false;
+        if (ConnectedTo != null) return false;
+        if (connection.ConnectedTo != null) return false;
+        ConnectedTo = connection;
+        connection.ConnectedTo = this;
+        return true;
+    }
+
     void OnDrawGizmos()
     {
         GUIStyle style = new GUIStyle();
         style.normal.textColor = transform.localPosition.z > 0 ? Color.red : Color.blue;
         Handles.Label(transform.position + Vector3.up * transform.localPosition.z * 0.5f, s.ToString("F3"), style);
+
+        if (ConnectedTo)
+        {
+            Handles.DrawLine(transform.position, ConnectedTo.transform.position);
+        }
     }
 }
