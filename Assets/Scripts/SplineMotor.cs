@@ -20,6 +20,7 @@ public class SplineMotor : MonoBehaviour
     public TrackController controller;
 
     public SplineMotor ConnectedTo;
+    public bool AutoConnect = false;
 
     public void SetSegment(TrackSegment segment, Vector3 initialLocalOffset)
     {

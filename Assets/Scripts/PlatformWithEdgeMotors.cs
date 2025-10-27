@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlatformWithMotors : MonoBehaviour
 {
+    [SerializeField] private PlatformConnectionManager _connectionManager;
     [Header("Motors")]
     public SplineMotor frontMotor;
     public SplineMotor backMotor;
@@ -134,8 +135,8 @@ public class PlatformWithMotors : MonoBehaviour
         if (motor == other.frontMotor)
         {
             float mul = overlapWorld;
-            motor.TryToConnect(backMotor);
-
+            //motor.TryToConnect(backMotor);
+            _connectionManager.TryAutoConnect(motor, backMotor);
             if (motor.ConnectedTo == backMotor)
             {
 
@@ -153,8 +154,8 @@ public class PlatformWithMotors : MonoBehaviour
         else
         {
             float mul = overlapWorld;
-            motor.TryToConnect(frontMotor);
-
+            //motor.TryToConnect(frontMotor);
+            _connectionManager.TryAutoConnect(motor, frontMotor);
             if (motor.ConnectedTo == frontMotor)
             {
 
