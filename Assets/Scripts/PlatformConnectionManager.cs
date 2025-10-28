@@ -115,6 +115,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class PlatformConnectionManager : MonoBehaviour
 {
@@ -162,11 +163,19 @@ public class PlatformConnectionManager : MonoBehaviour
 
         if (a.ConnectedTo != null || b.ConnectedTo != null)
             return false;
+
+        var platformA = a.GetComponentInParent<PlatformWithMotors>();
+        var platformB = b.GetComponentInParent<PlatformWithMotors>();
+
+        if (!platformA.CanBeConnected || !platformB.CanBeConnected)
+            return false;
+
         // Можно ли соединить автоматически
         bool canAuto = a.AutoConnect && b.AutoConnect && a.ConnectedTo == null && b.ConnectedTo == null;// a.TryToConnect(b);
         if (canAuto)
         {
-            CreateConnectionUI(a, b, connected: true);
+            ConnectionUI ui = CreateConnectionUI(a, b, connected: true);
+            if (ui != null) ConnectManually(ui);
             return true;
         }
 
@@ -175,16 +184,16 @@ public class PlatformConnectionManager : MonoBehaviour
         return false;
     }
 
-    private void CreateConnectionUI(SplineMotor a, SplineMotor b, bool connected)
+    private ConnectionUI CreateConnectionUI(SplineMotor a, SplineMotor b, bool connected)
     {
-        // Проверяем — уже есть UI для этой пары?
         foreach (var c in _connections)
         {
             if ((c.a == a && c.b == b) || (c.a == b && c.b == a))
-                return;
+                return null;
         }
 
         var button = Instantiate(connectionButtonPrefab, worldCanvas.transform);
+        button.GetComponentInChildren<TMP_Text>().text = connected ? "><" : "<>";
         var platformA = a.GetComponentInParent<PlatformWithMotors>();
         var platformB = b.GetComponentInParent<PlatformWithMotors>();
 
@@ -206,6 +215,8 @@ public class PlatformConnectionManager : MonoBehaviour
             button.onClick.AddListener(() => ConnectManually(ui));
 
         _connections.Add(ui);
+
+        return ui;
     }
 
     private void UpdateButtonText(ConnectionUI ui)
@@ -275,6 +286,7 @@ public class PlatformConnectionManager : MonoBehaviour
 
             ui.button.onClick.RemoveAllListeners();
             ui.button.onClick.AddListener(() => Disconnect(ui));
+            ui.button.GetComponentInChildren<TMP_Text>().text = "><";
         }
     }
 
@@ -326,13 +338,13 @@ public class PlatformConnectionManager : MonoBehaviour
         {
             if (ui.platformA.frontMotor == ui.a)
             {
-                ui.platformA.AddSpeed(-disconnectImpulse);
-                ui.platformB.AddSpeed(disconnectImpulse);
+                ui.platformA.SetTmpSpeed(disconnectImpulse);
+                ui.platformB.SetTmpSpeed(-disconnectImpulse);
             }
             else
             {
-                ui.platformA.AddSpeed(disconnectImpulse);
-                ui.platformB.AddSpeed(-disconnectImpulse);
+                ui.platformA.SetTmpSpeed(-disconnectImpulse);
+                ui.platformB.SetTmpSpeed(disconnectImpulse);
             }
         }
 

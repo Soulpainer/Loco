@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -17,12 +18,24 @@ public class PlatformWithMotors : MonoBehaviour
     public float drag = 2f;
     public float gravity = 9.81f;
 
+    private float tmpSpeed = 0f;
     private float speed = 0f;
     private float input = 0f;
 
     private float collision = 0;
 
+    public bool CanBeConnected => Mathf.Abs(TmpSpeed) < 0.01f;
+
+    public float TmpSpeed => tmpSpeed;
+
     public float Speed => speed;
+
+    public void SetTmpSpeed(float amount)
+    {
+        tmpSpeed = amount; //Mathf.Max(MathF.Abs(amount), MathF.Abs(speed)) * MathF.Sign(amount) * 5;//tmpSpeed = amount;
+    }
+
+
     public void AddSpeed(float amount)
     {
         speed += amount;
@@ -89,10 +102,12 @@ public class PlatformWithMotors : MonoBehaviour
         float slope = Vector3.Dot(Vector3.down, forwardDir);
 
         float accel = input * drivePower + gravity * slope + force;
+        speed += tmpSpeed;
         speed += accel * dt;
         speed *= Mathf.Exp(-drag * dt);
-        frontMotor.MoveAlongSegment(speed * dt);
-        backMotor.MoveAlongSegment(speed * dt);
+        tmpSpeed *= Mathf.Exp(-drag * dt * 100);
+        frontMotor.MoveAlongSegment((speed + tmpSpeed) * dt);
+        backMotor.MoveAlongSegment((speed + tmpSpeed) * dt);
 
         Vector3 posFront = frontMotor.EvaluatePosition();
         Vector3 posBack = backMotor.EvaluatePosition();

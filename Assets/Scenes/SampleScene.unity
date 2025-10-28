@@ -369,7 +369,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 93961745}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &93961746
 MeshFilter:
@@ -495,7 +495,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 153020370}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &153020371
 MeshFilter:
@@ -1557,7 +1557,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 549343832}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &549343833
 MeshFilter:
@@ -1819,7 +1819,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 566138195}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &566138196
 MeshFilter:
@@ -2743,7 +2743,7 @@ MonoBehaviour:
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
   ConnectedTo: {fileID: 0}
-  AutoConnect: 0
+  AutoConnect: 1
 --- !u!33 &784531834
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -2975,7 +2975,7 @@ MonoBehaviour:
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
   ConnectedTo: {fileID: 0}
-  AutoConnect: 0
+  AutoConnect: 1
 --- !u!33 &947274727
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3323,7 +3323,7 @@ MonoBehaviour:
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
   ConnectedTo: {fileID: 0}
-  AutoConnect: 0
+  AutoConnect: 1
 --- !u!33 &1040276233
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3429,7 +3429,7 @@ MonoBehaviour:
   worldCamera: {fileID: 963194227}
   worldCanvas: {fileID: 678726573}
   connectionButtonPrefab: {fileID: 432158237}
-  disconnectImpulse: 100
+  disconnectImpulse: 10
   connectDistanceThreshold: 2.5
   hideDistanceThreshold: 4
 --- !u!4 &1043358443
@@ -3774,7 +3774,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 1323174669}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &1323174670
 MeshFilter:
@@ -4310,7 +4310,7 @@ MonoBehaviour:
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
   ConnectedTo: {fileID: 0}
-  AutoConnect: 0
+  AutoConnect: 1
 --- !u!33 &1594779512
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -4558,7 +4558,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 1794277960}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &1794277961
 MeshFilter:
@@ -4753,7 +4753,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 1896447215}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &1896447216
 MeshFilter:
@@ -4879,7 +4879,7 @@ MonoBehaviour:
   _showLog: 0
   localOffset: {x: 0, y: 0, z: 0}
   controller: {fileID: 699678231}
-  ConnectedTo: {fileID: 1905039741}
+  ConnectedTo: {fileID: 0}
   AutoConnect: 0
 --- !u!33 &1905039742
 MeshFilter:
