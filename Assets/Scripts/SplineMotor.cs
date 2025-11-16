@@ -24,9 +24,10 @@ public class SplineMotor : MonoBehaviour
 
     public void SetSegment(TrackSegment segment, Vector3 initialLocalOffset)
     {
+        currentSegment?.UnregisterMotor(this);
         currentSegment = segment;
         localOffset = initialLocalOffset;
-        currentSegment.RegisterMotor(this);
+        currentSegment?.RegisterMotor(this);
 
         if (currentSegment != null && currentSegment.spline != null)
             segmentLength = currentSegment.GetLength();
