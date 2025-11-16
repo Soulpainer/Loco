@@ -79,10 +79,10 @@ public class SplineMotor : MonoBehaviour
 
                 s = next.s;
             }
-            else
-            {
-                s = 1f;
-            }
+            // else
+            // {
+            //     s = 1f;
+            // }
         }
         else if (s < 0f)
         {
@@ -101,10 +101,10 @@ public class SplineMotor : MonoBehaviour
 
                 s = next.s;
             }
-            else
-            {
-                s = 0f;
-            }
+            // else
+            // {
+            //     s = 0f;
+            // }
         }
 
         SplineUtility.Evaluate(currentSegment.spline.Spline, s, out float3 pos, out _, out _);

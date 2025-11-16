@@ -116,6 +116,7 @@ public class PlatformWithMotors : MonoBehaviour
         transform.position = (posFront + posBack) * 0.5f;
         transform.rotation = Quaternion.LookRotation(forwardDir, up);
         MaintainMotorDistance();
+        ResolveCollisionWithTrackEnd();
     }
 
     private void MaintainMotorDistance()
@@ -284,6 +285,34 @@ public class PlatformWithMotors : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void ResolveCollisionWithTrackEnd()
+    {
+        if (frontMotor.S < 0 || frontMotor.S > 1 || backMotor.S < 0 || backMotor.S > 1)
+        {
+            collision = 1;
+            float v1 = speed;
+            float v2 = 0;
+            float newV1 = GetCollisionSpeed(v1, v2, 1, 100000);
+            AddSpeed(-speed + newV1);
+            float myMin = Mathf.Min(frontMotor.S, backMotor.S);
+            float myMax = Mathf.Max(frontMotor.S, backMotor.S);
+
+            float otherMin = 0;
+            float otherMax = 1;
+
+            float overlapMax = Mathf.Min(0, myMax - otherMax);
+            float overlapMin = Mathf.Max(0, otherMin - myMin);
+            float overlap = overlapMax + overlapMin;
+            float len = frontMotor.CurrentSegment.GetLength();
+
+            float overlapWorld = overlap * len;
+            float mul = overlapWorld;
+            if (overlapWorld <= 0)
+                mul *= -0.0575f;//-speed * 0.9f;//-0.175f;
+            AddSpeed(mul);
+        }
     }
 
     void OnDrawGizmos()
