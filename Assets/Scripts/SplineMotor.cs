@@ -65,7 +65,23 @@ public class SplineMotor : MonoBehaviour
         if (s > 1f)
         {
             var joint = currentSegment.endJoint;
-            var next = controller.GetConnectedJoint(joint);
+            var platform = GetComponentInParent<PlatformWithMotors>();
+            var otherMotor = platform.frontMotor == this ? platform.backMotor : platform.frontMotor;
+            var otherMotorSegment = otherMotor.CurrentSegment;
+            SplineJoint otherMotorJoint = null;
+            if (otherMotorSegment != currentSegment)
+            {
+                otherMotorJoint = otherMotor.S > 0.5f ? otherMotorSegment.endJoint : otherMotorSegment.startJoint;
+            }
+            else 
+            if (ConnectedTo && ConnectedTo.CurrentSegment != currentSegment)
+            {
+                otherMotor = ConnectedTo;
+                otherMotorSegment = otherMotor.CurrentSegment;
+                otherMotorJoint = otherMotor.S > 0.5f ? otherMotorSegment.endJoint : otherMotorSegment.startJoint;
+            }
+
+            var next = otherMotorJoint ?? controller.GetConnectedJoint(joint);
 
             if (next != null)
             {
@@ -87,7 +103,22 @@ public class SplineMotor : MonoBehaviour
         else if (s < 0f)
         {
             var joint = currentSegment.startJoint;
-            var next = controller.GetConnectedJoint(joint);
+            var platform = GetComponentInParent<PlatformWithMotors>();
+            var otherMotor = platform.frontMotor == this ? platform.backMotor : platform.frontMotor;
+            var otherMotorSegment = otherMotor.CurrentSegment;
+            SplineJoint otherMotorJoint = null;
+            if (otherMotorSegment != currentSegment)
+            {
+                otherMotorJoint = otherMotor.S > 0.5f ? otherMotorSegment.endJoint : otherMotorSegment.startJoint;
+            }
+            else 
+            if (ConnectedTo && ConnectedTo.CurrentSegment != currentSegment)
+            {
+                otherMotor = ConnectedTo;
+                otherMotorSegment = otherMotor.CurrentSegment;
+                otherMotorJoint = otherMotor.S > 0.5f ? otherMotorSegment.endJoint : otherMotorSegment.startJoint;
+            }
+            var next = otherMotorJoint ?? controller.GetConnectedJoint(joint);
 
             if (next != null)
             {
